@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<advanced-search>
+	<group name="root" type="Stadium">
+		<label lang="en">Suche nach...</label>
+		<label lang="de">Search for...</label>
+		<group name="general">
+			<label lang="de">Stammdaten</label>
+			<label lang="en">Properties</label>			
+			<property qualifier="Stadium.code" sort-enabled="true" visible="true"/>
+			<property qualifier="Stadium.StadiumType" sort-enabled="true" visible="true"/>
+			<property qualifier="Stadium.capacity" sort-enabled="true" visible="true"/>
+		</group>
+		<group name="other">
+			<label lang="de">Spiele</label>
+			<label lang="en">Matches</label>
+			<property qualifier="Stadium.matches" sort-enabled="true" visible="true"/>		
+		</group>		
+	</group>
+</advanced-search>

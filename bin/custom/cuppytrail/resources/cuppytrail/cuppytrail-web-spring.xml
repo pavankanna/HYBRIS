@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ [y] hybris Platform
+
+ Copyright (c) 2000-2011 hybris AG
+ All rights reserved.
+
+ This software is the confidential and proprietary information of hybris
+ ("Confidential Information"). You shall not disclose such Confidential
+ Information and shall use it only in accordance with the terms of the
+ license agreement you entered into with hybris.
+-->
+
+
+<!-- 
+  WARNING: This is the Spring WEB configuration file. If you want to replace
+  items or managers you have to do this from the extensions core configuration 
+  file (cuppytrail/resources/cuppytrail-spring.xml) 
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+						http://www.springframework.org/schema/aop 
+						http://www.springframework.org/schema/aop/spring-aop-3.0.xsd"
+	default-autowire="byName">
+	
+	<!-- 
+		UICockpitSession represents session in an cockpit application. It manages e.g. the available cockpit perspectives.
+	 -->
+	<bean id="UICockpitSession" class="de.hybris.platform.cockpit.session.impl.UISessionImpl" scope="session">
+		<property name="initialSessionListeners">
+			<list></list>
+		</property>
+		<property name="availablePerspectives">
+			<list>
+				<ref bean="CuppytrailAdminPerspective"/>
+				<ref bean="CuppytrailPerspective"/>
+			</list>
+		</property>
+		<property name="usingTestIDs" value="false" />
+		<property name="dragOverPerspectivesEnabled" value="true" />
+		<property name="cachePerspectivesEnabled" value="true" />
+		<property name="sendEventsImmediately" value="false" />
+		<property name="requestHandler" ref="RequestHandler" />
+	</bean>
+
+   <bean id="CuppytrailAdminPerspective" scope="session" parent="CuppyAdminPerspective" class="de.hybris.platform.cuppy.web.cockpit.CuppyAdminPerspective">
+		<property name="browserArea">
+			<bean class="de.hybris.platform.cuppy.web.cockpit.CuppyBrowserArea">
+				<property name="rootSearchTypeCode" value="Match"/>
+				
+				<!-- customized view to support inspector mode -->
+				<property name="viewURI" value="/cuppytrail/cuppytrailBrowser.zul"/>
+				
+				<!-- inspector mode renderer -->
+				<property name="inspectorRenderer" ref="coverageInspectorRenderer"/>
+				
+				<!-- if set to true the inspector will be opened when an item is selected -->
+				<property name="openInspectorOnSelect" value="true"/>
+			</bean>
+		</property>
+	</bean>
+
+	<!-- 
+		Cuppytrail perspective.
+	 -->
+	<bean id="CuppytrailPerspective" scope="session" parent="BasePerspective">
+		<property name="uid" value="cuppytrail.perspective.cuppytrail" />  <!-- unique ID of the perspective -->
+		<property name="label" value="perspective.cuppytrail" />  <!-- localization key for the label of the perspective -->
+		<property name="customCsaURI" value="/cuppytrail/cuppytrailCSA.zul" />  <!-- file with optional custom client side actions -->
+
+		<property name="navigationArea">
+			<ref bean="CuppytrailNavigationArea" />
+		</property>
+		<property name="browserArea">
+			<bean class="de.hybris.platform.cuppytrail.session.impl.CuppytrailBrowserArea">
+				<property name="rootSearchTypeCode" value="Product"/>
+				<property name="viewURI" value="/cockpit/baseSearchBrowserArea.zul"/>
+			</bean>
+		</property>
+		<property name="editorArea">
+			<bean id="CuppytrailEditorAreaModel" parent="BaseEditorAreaModel">
+			<property name="editorAreaController">
+					<ref bean="CuppytrailEditorAreaController"/>
+				</property>
+			</bean>	
+		</property>
+		<property name="popupEditorArea">		
+			<bean id="CuppytrailPopupEditor" parent="BasePopupEditor">
+				<property name="editorAreaController">
+					<ref bean="CuppytrailPopupEditorAreaController"/>
+				</property>
+			</bean>
+		</property>
+		<property name="cockpitTypeService" ref="cockpitTypeService"/>		
+	</bean>
+	
+	<bean id="CuppytrailNavigationArea" class="de.hybris.platform.cuppytrail.session.impl.CuppytrailNavigationArea" scope="session" parent="BaseNavigationArea">
+		<property name="sectionModel">
+			<ref bean="CuppytrailNavigationAreaModel"/>	
+		</property>		
+		<property name="infoSlotRenderer">
+			<bean class="de.hybris.platform.cockpit.components.navigationarea.renderer.InfoBoxRenderer"/>
+		</property>
+		<property name="sections">
+			<list>
+<!--				<ref bean="CuppytrailTypeSelectorSection" />-->
+				<ref bean="CuppytrailUndoSection" />
+			</list>
+		</property>
+		<property name="cockpitTypeService" ref="cockpitTypeService"/>
+	</bean>
+	
+	<bean id="CuppytrailNavigationAreaModel" class="de.hybris.platform.cuppytrail.components.navigationarea.CuppytrailNavigationAreaModel" scope="session">
+		<property name="specialCollectionTypes">
+			<list>
+				<value>blacklist</value>
+				<value>quickcollection</value>
+			</list>
+		</property>						
+	</bean>
+	
+	<bean id="CuppytrailTypeSelectorSection" class="de.hybris.platform.cockpit.components.navigationarea.NavigationPanelSection" scope="prototype">
+		<property name="localizedLabel" value="navigationarea.types" />
+		<property name="visible" value="true" />
+		<property name="renderer">
+			<bean class="de.hybris.platform.cockpit.components.navigationarea.renderer.TypeSelectorSectionRenderer" >
+				<property name="typeCodes" value="GenericItem"/>
+				<property name="includeSubtypes" value="true"/>
+				<property name="displayType" value="TREE"/>
+<!--				<property name="pageSize" value="20" />-->
+				<property name="searchable" value="true" />
+			</bean>
+		</property>
+	</bean>
+		
+	<bean id="CuppytrailUndoSection" class="de.hybris.platform.cockpit.components.navigationarea.NavigationPanelSection" scope="prototype">
+		<property name="localizedLabel" value="navigationarea.history" />
+		<property name="visible" value="true" />
+		<property name="renderer">
+			<bean class="de.hybris.platform.cockpit.components.navigationarea.renderer.UndoSectionRenderer" />
+		</property>
+	</bean>
+	
+	<bean id="CuppytrailEditorAreaController" class="de.hybris.platform.cockpit.session.impl.DefaultEditorAreaController" scope="session">
+		<property name="sectionRowRenderer">
+			<bean id="CuppytrailEditorSectionRowRenderer" parent="EditorSectionRowRenderer"/>
+		</property>
+		<property name="editorFactory">
+			<ref bean="EditorFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="CuppytrailPopupEditorAreaController" class="de.hybris.platform.cuppytrail.session.impl.CuppytrailPopupEditorAreaControllerImpl" scope="prototype">
+		<property name="sectionRowRenderer">
+			<bean id="CuppytrailPopupEditorSectionRowRenderer" parent="EditorSectionRowRenderer"/>
+		</property>
+		<property name="editorFactory">
+			<ref bean="EditorFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="RequestHandler" class="de.hybris.platform.cockpit.session.impl.DefaultRequestHandler" scope="session">
+		<property name="requestEventHandlers">
+			<map>
+				<entry key="activation">
+					<bean class="de.hybris.platform.cockpit.session.impl.ActivationEventHandler">
+						<property name="prefix" value="act" />
+					</bean>
+				</entry>
+				<entry key="search">
+					<bean class="de.hybris.platform.cockpit.session.impl.SearchEventHandler">
+						<property name="prefix" value="srch" />
+					</bean>
+				</entry>
+				<entry key="celum">
+					<bean class="de.hybris.platform.cockpit.session.impl.CelumEventHandler" />
+				</entry>
+				<entry key="msg">
+					<bean class="de.hybris.platform.cockpit.session.impl.NotificationEventHandler">
+						<property name="prefix" value="msg" />
+					</bean>
+				</entry>
+			</map>
+		</property>
+	</bean>
+	
+	<!-- change the list of type codes to include the "Stadium" type -->
+	<bean id="CuppyTypeSelectorSection" class="de.hybris.platform.cockpit.components.navigationarea.NavigationPanelSection" scope="prototype">
+		<property name="localizedLabel" value="navigationarea.types" />
+		<property name="visible" value="true" />
+		<property name="renderer">
+			<bean class="de.hybris.platform.cockpit.components.navigationarea.renderer.TypeSelectorSectionRenderer" >
+				<property name="typeCodes" value="Competition,Match,MatchBet,Group,Team,Player,News,Stadium"></property>
+			</bean>
+		</property>
+	</bean>
+	
+	<!-- renderer of the inspector panel with coverage display capability -->
+	<bean id="coverageInspectorRenderer" class="de.hybris.platform.cockpit.components.inspector.impl.DefaultCoverageInspectorRenderer" scope="session">
+		<property name="showOnlyVisibleRows" value="false"/>
+	</bean>
+	
+	<!-- list of actions used in the list view, grid view and editor area -->
+	<bean id="cuppytrailContentBrowserStatusColumn" class="de.hybris.platform.cockpit.components.listview.impl.DefaultActionColumnConfiguration"
+		scope="prototype">
+		<constructor-arg value="Status" />
+		<property name="actions">
+			<list>
+				<ref bean="coverageInfoAction" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- action showing coverage calculation status and opening inspector mode on click -->
+	<bean id="coverageInfoAction" class="de.hybris.platform.cockpit.components.listview.impl.CoverageInfoAction" scope="prototype" />
+	
+	<bean id="LoginForm" class="de.hybris.platform.cockpit.forms.login.LoginForm" scope="session">
+		<property name="viewComponentURI" value="/cuppytrail/loginDialog.zul"/>
+	</bean>
+	
+</beans>
+	

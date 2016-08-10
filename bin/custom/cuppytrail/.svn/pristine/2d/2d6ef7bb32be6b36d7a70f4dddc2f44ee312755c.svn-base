@@ -1,0 +1,2 @@
+INSERT_UPDATE SearchRestriction;code[unique=true];name[lang=de];name[lang=en];query;principal(UID);restrictedType(code);active;generate
+;Cuppy_Frontend_News;Neuigkeiten;News;"{item:catalogVersion} IN (?session.catalogversions)";cuppyplayers;News;true;true

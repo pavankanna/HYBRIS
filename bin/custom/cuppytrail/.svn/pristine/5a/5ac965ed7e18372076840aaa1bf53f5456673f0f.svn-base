@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<base>
+	<search>
+		<search-properties>
+			<property qualifier="Stadium.code" />
+		</search-properties>
+		<sort-properties>
+			<property qualifier="Stadium.code" />
+			<property qualifier="Stadium.capacity" />
+			<property qualifier="Stadium.StadiumType" />
+		</sort-properties>
+	</search>
+	<label>
+		<property qualifier="Stadium.code"/>
+	</label>
+</base>

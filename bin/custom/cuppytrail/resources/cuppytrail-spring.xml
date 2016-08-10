@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ [y] hybris Platform
+
+ Copyright (c) 2000-2010 hybris AG
+ All rights reserved.
+
+ This software is the confidential and proprietary information of hybris
+ ("Confidential Information"). You shall not disclose such Confidential
+ Information and shall use it only in accordance with the terms of the
+ license agreement you entered into with hybris.
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	<context:component-scan base-package="de.hybris.platform.cuppytrail"/>
+
+	<bean id="stadiumInterceptor" class="de.hybris.platform.cuppytrail.interceptors.StadiumInterceptor"
+	scope="tenant" autowire="byName"/>		
+	<bean id="MyValidateInterceptorMapping" scope="tenant"
+      class="de.hybris.platform.servicelayer.interceptor.impl.InterceptorMapping">
+		<property name="interceptor" ref="stadiumInterceptor"/>
+		<property name="typeCode" value="Stadium"/>
+	</bean>
+	
+	<bean id="newsCatalogAwareInterceptor" class="de.hybris.platform.cuppytrail.interceptors.NewsCatalogAwareInterceptor"
+	scope="tenant" autowire="byName">
+		<property name="keyGenerator" ref="newsIdGenerator" />
+		<property name="defaultCatalog" value="Default" />
+		<property name="defaultCatalogVersion" value="Online" />
+		<property name="catalogVersionService" ref="catalogVersionService" />
+	</bean>
+	<bean id="NewsValidateInterceptorMapping" scope="tenant"
+      class="de.hybris.platform.servicelayer.interceptor.impl.InterceptorMapping">
+		<property name="interceptor" ref="newsCatalogAwareInterceptor"/>
+		<property name="typeCode" value="News"/>
+	</bean>
+		
+	<bean id="newsIdGenerator"
+		  class="de.hybris.platform.servicelayer.keygenerator.impl.PersistentKeyGenerator" init-method="init"
+		  scope="tenant">
+		<property name="key" value="news_id"/>
+		<property name="digits" value="8"/>
+		<property name="start" value="00000000"/>
+		<property name="numeric" value="true"/>
+	</bean>
+	
+	<bean id="playerVoidInterceptorMapping" class="de.hybris.platform.servicelayer.interceptor.impl.InterceptorMapping"
+		scope="tenant">
+		<property name="interceptor" ref="VoidInterceptor" />
+		<property name="typeCode" value="Player" />
+		<property name="replacedInterceptors" ref="playerConfirmedInterceptor"/>
+	</bean>
+	
+	<bean id="sendRankingJob" class="de.hybris.platform.cuppytrail.jobs.SendRankingJob" autowire="byName" scope="tenant">
+	</bean>
+		
+	<bean id="matchBetScoreAttributeHandler" class="de.hybris.platform.cuppytrail.attributehandlers.MatchBetScoreAttributeHandler" scope="tenant">
+		<property name="matchService" ref="matchService"/>
+	</bean>
+	
+	<bean id="matchService" class="de.hybris.platform.cuppytrail.CuppytrailMatchService" scope="tenant" />
+
+	<bean class="de.hybris.platform.processengine.definition.ProcessDefinitionResource" scope="tenant">  
+		<property name="resource" value="classpath:/processes/forgotpassword.xml"/> 
+	</bean>
+
+	<bean id="generateEmailAction" class="de.hybris.platform.cuppytrail.forgotpassword.actions.GenerateEmailAction" scope="tenant" parent="abstractAction">
+		<lookup-method name="createEmailMessage" bean="emailMessage"/>
+	</bean>
+	
+	<bean id="emailMessage" class="de.hybris.platform.cuppytrail.model.EmailMessageModel" scope="prototype">
+		<property name="replyToAddress" value="cuppytrail@hybris.de"/>
+		<property name="subject" value="Cuppytrail Password"/>
+	</bean>
+
+	<bean id="generateKeyAction" class="de.hybris.platform.cuppytrail.forgotpassword.actions.GenerateKeyAction" scope="tenant" parent="abstractAction"/>
+	
+	<bean id="sendEmailAction" class="de.hybris.platform.cuppytrail.forgotpassword.actions.SendEmailAction" scope="tenant" parent="abstractAction"/>
+	
+	<bean id="updatePasswordAction" class="de.hybris.platform.cuppytrail.forgotpassword.actions.UpdatePasswordAction" scope="tenant" parent="abstractAction"/>
+	
+	<bean id="secureTokenService" class="de.hybris.platform.cuppytrail.impl.DefaultSecureTokenService" scope="tenant">
+		<property name="signatureKeyHex" value="#{configurationService.configuration.getProperty('cuppytrail.securetoken.signature-key')}"/>
+		<property name="encryptionKeyHex" value="#{configurationService.configuration.getProperty('cuppytrail.securetoken.encryption-key')}"/>
+	</bean>
+
+	<bean id="registrationConfirmationActionJob" class="de.hybris.platform.cuppytrail.workflow.RegistrationConfirmationActionJob" scope="tenant">
+		<property name="modelService" ref="modelService" />
+		<property name="mailService" ref="mailService" />
+	</bean>
+	
+	<bean id="registrationDeclineActionJob" class="de.hybris.platform.cuppytrail.workflow.RegistrationDeclineActionJob" scope="tenant">
+		<property name="modelService" ref="modelService" />
+		<property name="mailService" ref="mailService" />
+	</bean>
+	
+	<bean id="playerService" class="de.hybris.platform.cuppytrail.CuppytrailPlayerService" scope="tenant" />
+
+	<bean id="stadiumCapacityInterceptor"
+		class="de.hybris.platform.cuppytrail.interceptors.StadiumCapacityInterceptor"
+		scope="tenant" autowire="byName">
+		<property name="eventService" ref="eventService" />
+	</bean>
+
+	<bean id="StadiumInterceptorMapping" scope="tenant"
+		class="de.hybris.platform.servicelayer.interceptor.impl.InterceptorMapping">
+		<property name="interceptor" ref="stadiumCapacityInterceptor" />
+		<property name="typeCode" value="Stadium" />
+	</bean>
+
+	<bean id="stadiumListener"
+		class="de.hybris.platform.cuppytrail.events.StadiumEventListener">
+		<lookup-method bean="modelService" name="getModelService"/>
+	</bean>
+
+
+</beans>

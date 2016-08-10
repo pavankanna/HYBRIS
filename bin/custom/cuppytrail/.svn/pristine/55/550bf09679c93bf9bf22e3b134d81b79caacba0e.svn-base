@@ -1,0 +1,12 @@
+# sample constraint group for cuppy player
+insert_update CoverageConstraintGroup;id[unique=true];coverageDomainID;dedicatedTypes(code);interfaceName
+;playerCoverageConstraintGroup;defaultDomain;Player;de.hybris.platform.validation.groupinterfaces.PlayerCoverageConstraintGroup
+
+insert_update SizeConstraint;descriptor(enclosingType(code),qualifier);id[unique=true,allownull=true];max[allownull=true];min[allownull=true];qualifier[allownull=true];severity(code,itemtype(code));target[allownull=true];type(code);constraintGroups(id);message[lang=de];message[lang=en]
+;Player:name;PlayerNameMinSizeCoverageConstraint;255;3;name;ERROR:Severity;de.hybris.platform.cuppy.model.PlayerModel;Player;playerCoverageConstraintGroup;;
+;Player:competitions;PlayerCompetitionsMinSizeCoverageConstraint;10000;1;competitions;WARN:Severity;de.hybris.platform.cuppy.model.PlayerModel;Player;playerCoverageConstraintGroup;Es muss mindestens ein Wettbewerb definiert sein.;There must be at least one competition assigned.;
+
+insert_update NotNullConstraint;descriptor(enclosingType(code),qualifier);id[unique=true,allownull=true];qualifier[allownull=true];severity(code,itemtype(code));target[allownull=true];type(code);constraintGroups(id)
+;Player:profilePicture;PlayerPictureNotNullConstraint;profilePicture;WARN:Severity;de.hybris.platform.cuppy.model.PlayerModel;Player;playerCoverageConstraintGroup
+
+$de.hybris.platform.core.Registry.getApplicationContext().getBean(de.hybris.platform.validation.services.ValidationService.class).reloadValidationEngine();;;;;;;;;

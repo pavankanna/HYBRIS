@@ -1,0 +1,13 @@
+
+TDD with testGetAllStadiumProducts1 -> New DTO and Method
+TDD testGetAllStadiumProducts2 -> 
+	Test Tenant and then in hMC creation of 2 products
+	TODO: Minimum for import of 2 products with prices
+	IStadiumService::getAllStadiumProducts
+	StadiumProductDataTO constructor and fields
+index.jsp page modified
+
+Qns
+Proper Import
+Product Name
+Avoiding Jalo (Currency)

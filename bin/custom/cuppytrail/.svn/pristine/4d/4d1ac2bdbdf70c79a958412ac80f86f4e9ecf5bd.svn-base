@@ -1,0 +1,9 @@
+# not null constraint for player.name 
+INSERT_UPDATE NotNullConstraint;active;descriptor(enclosingType(code),qualifier);id[unique=true];message[lang=de];message[lang=en];qualifier;severity(code,itemtype(code));target;type(code);
+;true;Player:name;playerNameNotNullConstraint;Ein Spieler sollte einen Anzeigenamen haben;A player should have a display name;name;WARN:Severity;de.hybris.platform.cuppy.model.PlayerModel;Player;
+
+# regexp constraint for player.email
+INSERT_UPDATE PatternConstraint;active;descriptor(enclosingType(code),qualifier);id[unique=true];flags(code,itemtype(code));regexp;message[lang=de];message[lang=en];qualifier;severity(code,itemtype(code));target;type(code);
+;true;Player:eMail;playerEMailValidConstraint;UNIX_LINES:RegexpFlag;.+@.+\.[a-z]+;Die Adresse ist nicht gültig;Address is not valid;eMail;ERROR:Severity;de.hybris.platform.cuppy.model.PlayerModel;Player;
+
+#% de.hybris.platform.core.Registry.getApplicationContext().getBean(de.hybris.platform.validation.services.ValidationService.class).reloadValidationEngine();
